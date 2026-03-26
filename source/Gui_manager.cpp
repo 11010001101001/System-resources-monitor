@@ -50,6 +50,12 @@ void GuiManager::buildTopConsoleWindow()
 
     GetWindowRect(hdesktop, &desktop);
 
+    long style = GetWindowLong(hwndConsole, GWL_EXSTYLE);
+    style |= WS_EX_TOOLWINDOW;
+    style &= ~WS_EX_APPWINDOW;
+
+    SetWindowLong(hwndConsole, GWL_EXSTYLE, style);
+
     int right = desktop.right;
     int top = desktop.top;
     int width = 330;
@@ -64,11 +70,13 @@ void GuiManager::buildTopConsoleWindow()
         y,
         width,
         height,
-        SWP_NOREDRAW);
+        SWP_NOREDRAW
+    );
 
     hideCursor();
     setBoldFont();
     SetConsoleOutputCP(CP_UTF8);
+    SendMessage(hwndConsole, WM_SETTEXT, 0, (LPARAM)"Monitor");
 }
 
 COORD GuiManager::buildCoord()
