@@ -1,4 +1,4 @@
-- **Platform**: windows 10
+- **Platform**: windows 10, 11(need set old terminal in settings)
 - **GPU**: nvidia rtx 2060 
 
 ![demo_monitor](https://github.com/user-attachments/assets/7d6e54b1-7599-467b-81f8-593dbeaae17a)
