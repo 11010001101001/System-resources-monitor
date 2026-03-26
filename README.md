@@ -1,7 +1,7 @@
 - **Platform**: windows 10, 11(need set old terminal in settings)
 - **GPU**: nvidia rtx 2060 
 
-<img src="demo.jpg" width="100%" />
+<img src="demo.jpg" width="50%" />
 
 ## ☕️
 - **TON**: UQCQclFDQnQkHI4bJETisvn4QAZevjMWx5mjC3AErZaXvhlU
