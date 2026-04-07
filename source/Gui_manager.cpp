@@ -3,6 +3,8 @@
 #define RTX_2060_MAX_RPM 3069
 #define PROCENTS " %"
 #define DELAY 3000
+#define ANIMATION_DELAY 1000
+#define LEFT_DELAY 0
 #define DIVIDER " / "
 #define SPACER "                                   "
 #define CRITICAL 80
@@ -70,13 +72,12 @@ void GuiManager::buildTopConsoleWindow()
         y,
         width,
         height,
-        SWP_NOREDRAW
-    );
+        SWP_NOREDRAW);
 
     hideCursor();
     setBoldFont();
     SetConsoleOutputCP(CP_UTF8);
-    SendMessage(hwndConsole, WM_SETTEXT, 0, (LPARAM)"Monitor");
+    SendMessage(hwndConsole, WM_SETTEXT, 0, (LPARAM) "Monitor");
 }
 
 COORD GuiManager::buildCoord()
@@ -95,6 +96,61 @@ void GuiManager::showStats(SystemAnalizer analizer, COORD coord)
     string fan_usage = analizer.analize(part::gpu_fan_speed);
     string cpu = analizer.analize(part::cpu);
 
+    bool is_cached = !cpu_cache.empty() && !ram_cache.empty() && !gpu_cache.empty() && !gpu_temp_cache.empty() && !fan_usage_cache.empty();
+
+    if (is_cached)
+    {
+        int temp_cpu = convertToInt(cpu_cache);
+        int temp_ram = convertToInt(ram_cache);
+        int temp_gpu = convertToInt(gpu_cache);
+        int temp_gpu_temp = convertToInt(gpu_temp_cache);
+        int temp_fan_usage = convertToInt(fan_usage_cache);
+
+        for (int i = 0; i < 3; i++)
+        {
+            int step_cpu = calculateNextStepValue(temp_cpu, convertToInt(cpu));
+            int step_ram = calculateNextStepValue(temp_ram, convertToInt(ram));
+            int step_gpu = calculateNextStepValue(temp_gpu, convertToInt(gpu));
+            int step_gpu_temp = calculateNextStepValue(temp_gpu_temp, convertToInt(gpu_temp));
+            int step_fan_usage = calculateNextStepValue(temp_fan_usage, convertToInt(fan_usage));
+
+            clean(coord);
+
+            show(part::cpu, to_string(step_cpu));
+            show(part::ram, to_string(step_ram));
+            show(part::gpu, to_string(step_gpu));
+            show(part::gpu_temp, to_string(step_gpu_temp));
+            show(part::gpu_fan_speed, to_string(step_fan_usage));
+
+            checkIsAchtung(ram, gpu, cpu);
+            Sleep(ANIMATION_DELAY);
+        }
+    }
+    else
+    {
+        clean(coord);
+
+        show(part::cpu, cpu);
+        show(part::ram, ram);
+        show(part::gpu, gpu);
+        show(part::gpu_temp, gpu_temp);
+        show(part::gpu_fan_speed, fan_usage);
+
+        checkIsAchtung(ram, gpu, cpu);
+    }
+
+    cpu_cache = cpu;
+    ram_cache = ram;
+    gpu_cache = gpu;
+    gpu_temp_cache = gpu_temp;
+    fan_usage_cache = fan_usage;
+
+    DWORD sleep_time = (is_cached) ? LEFT_DELAY : DELAY;
+    Sleep(sleep_time);
+}
+
+void GuiManager::clean(COORD coord)
+{
     // 'reset' old cout
     SetConsoleCursorPosition(hConsole, coord);
 
@@ -103,16 +159,24 @@ void GuiManager::showStats(SystemAnalizer analizer, COORD coord)
 
     // cout new values with no cls blinking
     SetConsoleCursorPosition(hConsole, coord);
+}
 
-    show(part::cpu, cpu);
-    show(part::ram, ram);
-    show(part::gpu, gpu);
-    show(part::gpu_temp, gpu_temp);
-    show(part::gpu_fan_speed, fan_usage);
+int GuiManager::calculateNextStepValue(int &temp, int goal)
+{
+    int step = abs(temp - goal) / 3;
 
-    checkIsAchtung(ram, gpu, cpu);
-
-    Sleep(DELAY);
+    if (temp == goal)
+    {
+        return goal;
+    }
+    else if (temp > goal)
+    {
+        return temp -= step;
+    }
+    else
+    {
+        return temp += step;
+    }
 }
 
 void GuiManager::show(SystemAnalizer::DevicePart part, string param)

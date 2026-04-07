@@ -21,9 +21,17 @@ private:
     void setBoldFont();
     void show(SystemAnalizer::DevicePart, string);
     void checkIsAchtung(string, string, string);
+    void clean(COORD coord);
+    int calculateNextStepValue(int &start, int finish);
     int convertToInt(string);
     string buildProgressBar(string);
     string rpm(string);
     WORD getWAttributes(string);
     COORD buildCoord();
+
+    string ram_cache;
+    string gpu_cache;
+    string gpu_temp_cache;
+    string fan_usage_cache;
+    string cpu_cache;
 };
